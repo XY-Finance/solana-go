@@ -377,3 +377,21 @@ func TestSignatureVerify(t *testing.T) {
 		}
 	}
 }
+
+func TestSignatureSQLInterface(t *testing.T) {
+	t.Run("Scan and value Signature", func(t *testing.T) {
+		b58Literal := "5qzhXaDMhcVZA2y6KDK218noKdX7cd7aRCC1XvFFUTEievDMt8EbCC1oCKyqGvGmZs5UzE34v9JR8846HtJVF6qe"
+		raw, err := base58.Decode(b58Literal)
+		require.NoError(t, err)
+
+		var sig Signature
+		err = sig.Scan(raw)
+		require.NoError(t, err)
+		require.Equal(t, b58Literal, sig.String())
+
+		raw2, err := sig.Value()
+		require.NoError(t, err)
+		require.Equal(t, raw, raw2)
+
+	})
+}

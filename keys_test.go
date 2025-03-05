@@ -630,3 +630,43 @@ func TestFindTokenMetadataAddress(t *testing.T) {
 	assert.Equal(t, metadataPDA, MustPublicKeyFromBase58("GfihrEYCPrvUyrMyMQPdhGEStxa9nKEK2Wfn9iK4AZq2"))
 	assert.Equal(t, bumpSeed, uint8(0xfd))
 }
+
+func TestPublicKeySQLInterface(t *testing.T) {
+	t.Run("Scan and value PublicKey", func(t *testing.T) {
+		b58Literal := "7cVfgArCheMR6Cs4t6vz5rfnqd56vZq4ndaBrY5xkxXy"
+		raw := []byte{
+			0x62, 0x3d, 0xdd, 0x11, 0x7e, 0x7c, 0xc5, 0x62,
+			0xf6, 0x63, 0x15, 0x05, 0x25, 0x8c, 0xd1, 0xdc,
+			0xee, 0x81, 0x94, 0x9f, 0x8a, 0xfd, 0x1e, 0xa2,
+			0x94, 0xdc, 0x47, 0xbe, 0x6e, 0xcf, 0xf3, 0xa8,
+		}
+
+		pk := &PublicKey{}
+		err := pk.Scan(raw)
+		require.NoError(t, err)
+		assert.Equal(t, MustPublicKeyFromBase58(b58Literal), *pk)
+
+		value, err := pk.Value()
+		require.NoError(t, err)
+		assert.Equal(t, raw, value)
+	})
+
+	t.Run("Scan and value empty PublicKey", func(t *testing.T) {
+		b58Literal := "11111111111111111111111111111111"
+		raw := []byte{
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		}
+
+		pk := &PublicKey{}
+		err := pk.Scan(raw)
+		require.NoError(t, err)
+		assert.Equal(t, MustPublicKeyFromBase58(b58Literal), *pk)
+
+		value, err := pk.Value()
+		require.NoError(t, err)
+		assert.Equal(t, raw, value)
+	})
+}

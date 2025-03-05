@@ -19,6 +19,7 @@ package solana
 
 import (
 	"crypto/ed25519"
+	"database/sql/driver"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -200,6 +201,24 @@ func (s Signature) Verify(pubkey PublicKey, msg []byte) bool {
 
 func (p Signature) String() string {
 	return base58.Encode(p[:])
+}
+
+// Scan implements the sql.Scanner interface.
+func (s *Signature) Scan(src interface{}) error {
+	srcb, ok := src.([]byte)
+	if !ok {
+		return fmt.Errorf("expected []byte, got %T", src)
+	}
+	if len(srcb) != SignatureLength {
+		return fmt.Errorf("invalid length for Signature, expected 64, got %d", len(srcb))
+	}
+	copy(s[:], srcb)
+	return nil
+}
+
+// Value implements the driver.Valuer interface.
+func (s Signature) Value() (driver.Value, error) {
+	return s[:], nil
 }
 
 type Base64 []byte
