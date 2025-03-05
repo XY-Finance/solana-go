@@ -23,6 +23,7 @@ import (
 	"crypto/ed25519"
 	crypto_rand "crypto/rand"
 	"crypto/sha256"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -318,6 +319,24 @@ func (p PublicKey) String() string {
 // and cannot be used for anything else.
 func (p PublicKey) Short(n int) string {
 	return formatShortPubkey(n, p)
+}
+
+// Scan implements the sql.Scanner interface.
+func (p *PublicKey) Scan(value interface{}) error {
+	srcb, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("unexpected type for PublicKey: %T", value)
+	}
+	if len(srcb) != PublicKeyLength {
+		return fmt.Errorf("unexpected length for PublicKey: %d", len(srcb))
+	}
+	copy(p[:], srcb)
+	return nil
+}
+
+// Scan implements the sql.Scanner interface.
+func (p PublicKey) Value() (driver.Value, error) {
+	return p[:], nil
 }
 
 func formatShortPubkey(n int, pubkey PublicKey) string {
